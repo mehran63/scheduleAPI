@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: Leonardo API
+  version: 1.0.0
+paths:
+  /accounts/{accountId}/schedules/{scheduleId}:
+    get:
+      summary: Get a schedule by ID
+      operationId: getSchedule
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+    put:
+      summary: Update a schedule by ID
+      operationId: updateSchedule
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+    delete:
+      summary: Delete a schedule by ID
+      operationId: deleteSchedule
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /accounts/{accountId}/schedules:
+    get:
+      summary: Get all schedules
+      operationId: getSchedules
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleResponse'
+    post:
+      summary: Create a new schedule
+      operationId: createSchedule
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequestBody'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /accounts/{accountId}/schedules/{scheduleId}/tasks:
+    get:
+      summary: Get all tasks for a schedule
+      operationId: getTasks
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskResponseBody'
+    post:
+      summary: Create a new task for a schedule
+      operationId: createTask
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequestBody'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /accounts/{accountId}/schedules/{scheduleId}/tasks/{taskId}:
+    get:
+      summary: Get a task by ID
+      operationId: getTask
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      - $ref: '#/components/parameters/taskId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponseBody'
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+    put:
+      summary: Update a task by ID
+      operationId: updateTask
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      - $ref: '#/components/parameters/taskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponseBody'
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+    delete:
+      summary: Delete a task by ID
+      operationId: deleteTask
+      parameters:
+      - $ref: '#/components/parameters/accountId'
+      - $ref: '#/components/parameters/scheduleId'
+      - $ref: '#/components/parameters/taskId'
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  parameters:
+    accountId:
+      name: accountId
+      in: path
+      description: ID of the account
+      required: true
+      schema:
+        type: string
+    scheduleId:
+      name: scheduleId
+      in: path
+      description: The ID of the schedule
+      required: true
+      schema:
+          type: string
+          format: uuid
+    taskId:
+      name: taskId
+      in: path
+      description: The ID of the task
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    ScheduleRequestBody:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+      required:
+        - startTime
+        - endTime
+    ScheduleResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        accountId:
+          type: integer
+        agentId:
+          type: integer
+    TaskRequestBody:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        type:
+          type: string
+          enum: ['WORK', 'BREAK']
+      required:
+        - startTime
+        - durationMinutes
+        - type
+    TaskResponseBody:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        type:
+          type: string
+          enum: ['WORK', 'BREAK']
+        accountId:
+          type: integer
+        scheduleId:
+          type: string
+      required:
+        - startTime
+        - durationMinutes
+        - type
+    Error:
+      type: object
+      properties:
+        message:
+          type: string

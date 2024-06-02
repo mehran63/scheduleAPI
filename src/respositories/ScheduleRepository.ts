@@ -1,4 +1,3 @@
-// ScheduleRepository.ts
 import { PrismaClient, Schedule, Task } from '@prisma/client';
 
 export class ScheduleRepository {

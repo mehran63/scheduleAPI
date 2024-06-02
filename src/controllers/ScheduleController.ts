@@ -1,9 +1,7 @@
 import Router from 'koa-router';
 import { PrismaClient, Task } from '@prisma/client';
-import { ScheduleRepository } from './ScheduleRepository';
-import { Agent } from 'http';
+import { ScheduleRepository } from '../respositories/ScheduleRepository';
 
-const router = new Router();
 const prisma = new PrismaClient();
 const scheduleRepository = new ScheduleRepository(prisma);
 
@@ -20,7 +18,7 @@ interface IScheduleResponse {
     agentId: number;
 }
 
-router.get('/accounts/:accountId/schedules/:id', async (ctx) => {
+const getSchedule = async (ctx: Router.RouterContext) => {
     // TODO
     // Validation to check agentId in token has access to accountId
     const schedule = await scheduleRepository.getSchedule(ctx.params.id);
@@ -43,9 +41,9 @@ router.get('/accounts/:accountId/schedules/:id', async (ctx) => {
     };
     ctx.body = response;
     ctx.status = 200;
-});
+};
 
-router.get('/accounts/:accountId/schedules', async (ctx) => {
+const getAllSchedules = async (ctx: Router.RouterContext) => {
     // TODO: Validation to check agentId in token has access to accountId
     // TODO: pagination
     const schedules = await scheduleRepository.getSchedulesByAccount(parseInt(ctx.params.accountId));
@@ -58,10 +56,9 @@ router.get('/accounts/:accountId/schedules', async (ctx) => {
     }));
     ctx.body = response;
     ctx.status = 200;
-});
+};
 
-// Add routes for create, update, delete 
-router.post('/accounts/:accountId/schedules/', async (ctx) => {
+const createSchedule = async (ctx: Router.RouterContext) => {
     // TODO
     // agentId supposed to be from bearer token, but for now we just hardcode it
     // the next step is to implement authentication
@@ -78,6 +75,7 @@ router.post('/accounts/:accountId/schedules/', async (ctx) => {
         startTime: new Date(request.startTime),
         endTime: new Date(request.endTime),
     };
+
     if (scheduleInput.startTime >= scheduleInput.endTime) {
         ctx.status = 400;
         ctx.body = { message: 'startTime must be before endTime' };
@@ -86,11 +84,15 @@ router.post('/accounts/:accountId/schedules/', async (ctx) => {
 
     const schedule = await scheduleRepository.createSchedule(scheduleInput);
 
-    ctx.body = schedule;
+    ctx.body = {
+        ...schedule,
+        startTime: schedule.startTime.toISOString(),
+        endTime: schedule.endTime.toISOString(),
+    };
     ctx.status = 201;
-});
+};
 
-router.put('/accounts/:accountId/schedules/:id', async (ctx) => {
+const updatedSchedule = async (ctx: Router.RouterContext) => {
     // TODO
     // Validation to check agentId in token has access to accountId
     const schedule = await scheduleRepository.getSchedule(ctx.params.id, true);
@@ -118,7 +120,7 @@ router.put('/accounts/:accountId/schedules/:id', async (ctx) => {
         return;
     }
 
-    for (const task of (schedule as any).tasks as Task[]) {
+    for (const task of schedule.tasks ?? []) {
         const taskStartTime = new Date(task.startTime);
         const taskEndTime = new Date(taskStartTime.getTime() + task.duration * 60 * 1000);
 
@@ -134,11 +136,15 @@ router.put('/accounts/:accountId/schedules/:id', async (ctx) => {
 
     const updatedSchedule = await scheduleRepository.updateSchedule(ctx.params.id, scheduleInput);
 
-    ctx.body = updatedSchedule;
+    ctx.body = {
+        ...updatedSchedule,
+        startTime: updatedSchedule.startTime.toISOString(),
+        endTime: updatedSchedule.endTime.toISOString(),
+    };
     ctx.status = 200;
-});
+};
 
-router.delete('/accounts/:accountId/schedules/:id', async (ctx) => {
+const deleteSchedule = async (ctx: Router.RouterContext) => {
     // TODO
     // Validation to check agentId in token has access to accountId
     const schedule = await scheduleRepository.getSchedule(ctx.params.id, true);
@@ -158,9 +164,14 @@ router.delete('/accounts/:accountId/schedules/:id', async (ctx) => {
         return;
     }
 
-
     await scheduleRepository.deleteSchedule(ctx.params.id);
     ctx.status = 204;
-});
+};
 
-export default router;
+export {
+    getSchedule,
+    getAllSchedules,
+    createSchedule,
+    updatedSchedule,
+    deleteSchedule,
+};

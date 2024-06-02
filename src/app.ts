@@ -1,8 +1,7 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
-import { RequestValidationError, oas } from 'koa-oas3';
-import scheduleRouter from './ScheduleController';
-import taskRouter from './TaskController';
+import { oas } from 'koa-oas3';
+import router from './router';
 
 async function bootstrap() {
     const app = new Koa();
@@ -25,8 +24,7 @@ async function bootstrap() {
     })
     app.use(oasMw);
 
-    app.use(scheduleRouter.routes()).use(scheduleRouter.allowedMethods());
-    app.use(taskRouter.routes()).use(taskRouter.allowedMethods());
+    app.use(router.routes()).use(router.allowedMethods());
 
     app.listen(3000);
 

@@ -1,11 +1,9 @@
 
-// TaskController.ts
 import Router from 'koa-router';
-import { PrismaClient, Task } from '@prisma/client';
-import { TaskRepository } from './TaskRepository';
-import { ScheduleRepository } from './ScheduleRepository';
+import { PrismaClient } from '@prisma/client';
+import { TaskRepository } from '../respositories/TaskRepository';
+import { ScheduleRepository } from '../respositories/ScheduleRepository';
 
-const router = new Router();
 const prisma = new PrismaClient();
 const taskRepository = new TaskRepository(prisma);
 const scheduleRepository = new ScheduleRepository(prisma);
@@ -19,28 +17,29 @@ interface ITaskRequest {
     type: TaskType;
 }
 
-router.get('/accounts/:accountId/schedules/:scheduleId/tasks', async (ctx) => {
-    const schedule = await scheduleRepository.getSchedule(ctx.params.scheduleId, true);
-    if (!schedule) {
-        ctx.status = 404;
-        return;
-    }
-    ctx.body = (schedule as any).tasks as Task[];
-    ctx.status = 200;
-    console.log(100, ctx.body, ctx.status);
-});
+// TODO: all these midleware should be extracted to a separate file
 
-router.get('/accounts/:accountId/schedules/:scheduleId/tasks/:id', async (ctx) => {
-    const task = await taskRepository.getTask(ctx.params.id);
+const getTask = async (ctx: Router.RouterContext) => {
+    const task = await taskRepository.getTask(ctx.params.scheduleId, true);
     if (!task) {
         ctx.status = 404;
         return;
     }
     ctx.body = task;
     ctx.status = 200;
-});
+}
 
-router.post('/accounts/:accountId/schedules/:scheduleId/tasks', async (ctx) => {
+const getTasks = async (ctx: Router.RouterContext) => {
+    const schedule = await scheduleRepository.getSchedule(ctx.params.scheduleId, true);
+    if (!schedule) {
+        ctx.status = 404;
+        return;
+    }
+    ctx.body = schedule?.tasks;
+    ctx.status = 200;
+}
+
+const createTask = async (ctx: Router.RouterContext) => {
     const request = <ITaskRequest>ctx.request.body;
     const taskInput = {
         startTime: new Date(request.startTime),
@@ -70,9 +69,9 @@ router.post('/accounts/:accountId/schedules/:scheduleId/tasks', async (ctx) => {
     const task = await taskRepository.createTask(taskInput);
     ctx.body = task;
     ctx.status = 201;
-});
+};
 
-router.put('/accounts/:accountId/schedules/:scheduleId/tasks/:id', async (ctx) => {
+const updateTask = async (ctx: Router.RouterContext) => {
     const task = await taskRepository.getTask(ctx.params.id, true);
     if (!task) {
         ctx.status = 404;
@@ -103,16 +102,16 @@ router.put('/accounts/:accountId/schedules/:scheduleId/tasks/:id', async (ctx) =
     const updatedTask = await taskRepository.updateTask(ctx.params.id, taskInput);
     ctx.body = updatedTask;
     ctx.status = 200;
-});
+};
 
-router.delete('/accounts/:accountId/schedules/:scheduleId/tasks/:id', async (ctx) => {
+const deleteTask = async (ctx: Router.RouterContext) => {
     const task = await taskRepository.getTask(ctx.params.id, true);
     if (!task) {
         ctx.status = 404;
         return;
     }
 
-    if (task.scheduleId !== ctx.params.scheduleId || !task.schedule) {
+    if (task.scheduleId !== ctx.params.scheduleId) {
         ctx.status = 400;
         ctx.body = { message: 'Task does not belong to schedule' };
         return;
@@ -120,7 +119,12 @@ router.delete('/accounts/:accountId/schedules/:scheduleId/tasks/:id', async (ctx
 
     await taskRepository.deleteTask(ctx.params.id);
     ctx.status = 204;
-});
+};
 
-
-export default router;
+export {
+    getTask,
+    getTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+};

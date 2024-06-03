@@ -1,7 +1,5 @@
 # Leonardo.Ai API Team Technical Challenge V2
 
-## Author
-Mehran Farshadmehr, farshadmehr.mehran@gmail.com.
 
 ## Unit Tests
 

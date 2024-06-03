@@ -53,3 +53,29 @@ To set up a local database for the project, follow these steps:
     This command will apply any pending migrations and update the database schema accordingly.
 
 Once the local database is set up and the migration script is executed, you can use it for storing and retrieving data in the project.
+
+# E2E Tests
+### E2E Tests
+To run end-to-end (E2E) tests for the project, follow these steps:
+1. Make sure you have the necessary dependencies installed.
+2. Open a terminal and navigate to the project directory.
+3. In a separate terminal, navigate to the project directory and run the following command to execute the E2E tests:
+
+    ```bash
+    npm run e2e
+    ```
+
+   This command will run the E2E tests using a testing framework like Cypress or Selenium.
+
+4. Wait for the tests to complete. The test results will be displayed in the terminal.
+
+By running the E2E tests, you can ensure that the different components of your application are working together correctly and that the application behaves as expected from a user's perspective.
+
+### Failure and clean-up
+
+In case of a failure of end-to-end tests, once investigation is done, it's important to clean up any resources that were created for the test run. This includes Docker containers, networks, and volumes that might have been created.
+
+To clean up these resources, you can use the cleanup script provided in the `e2e` directory. Here's how to run it:
+
+```bash
+./e2e/cleanup.sh
